@@ -1,0 +1,38 @@
+Vagrant.configure("2") do |config|
+  
+  config.vm.define "website" do |website|
+    website.vm.box = "spox/ubuntu-arm"
+    website.vm.network "private_network", ip: "192.168.50.11"
+    website.vm.provider "vmware_desktop" do |vmware|
+     vmware.gui = true
+     vmware.allowlist_verified = true
+     vmware.memory="1024"
+     vmware.cpus=2
+  end
+  website.vm.provision "shell" , inline: <<-SHELL 
+    apt-get update  
+    apt-get install apache2 -y 
+  SHELL
+  end
+
+  config.vm.define "wave" do |wave|
+    wave.vm.box = "jacobw/fedora35-arm64"
+    wave.vm.network "private_network", ip: "192.168.50.12"
+    wave.vm.provider "vmware_desktop" do |vmware|
+     vmware.gui = true
+     vmware.allowlist_verified = true
+     vmware.memory="1024"
+     vmware.cpus=2
+  end
+  wave.vm.provision "shell", inline: <<-SHELL
+     yum install httpd -y
+     systemctl start httpd 
+     systemctl enable httpd 
+     cd /tmp/
+     git clone https://github.com/satishankalap/wave_cafe.git 
+     cp -r wave_cafe/* /var/www/html/
+     systemctl restart httpd
+  SHELL
+  end
+end
+
